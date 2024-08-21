@@ -1,1 +1,1820 @@
-{"metadata":{"kernelspec":{"language":"python","display_name":"Python 3","name":"python3"},"language_info":{"name":"python","version":"3.10.13","mimetype":"text/x-python","codemirror_mode":{"name":"ipython","version":3},"pygments_lexer":"ipython3","nbconvert_exporter":"python","file_extension":".py"},"kaggle":{"accelerator":"none","dataSources":[{"sourceId":3136,"databundleVersionId":26502,"sourceType":"competition"}],"dockerImageVersionId":30746,"isInternetEnabled":false,"language":"python","sourceType":"notebook","isGpuEnabled":false}},"nbformat_minor":4,"nbformat":4,"cells":[{"cell_type":"code","source":"# This Python 3 environment comes with many helpful analytics libraries installed\n# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python\n# For example, here's several helpful packages to load\n\nimport numpy as np # linear algebra\nimport pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n\n# Input data files are available in the read-only \"../input/\" directory\n# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory\n\nimport os\nfor dirname, _, filenames in os.walk('/kaggle/input'):\n    for filename in filenames:\n        print(os.path.join(dirname, filename))\n\n# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using \"Save & Run All\" \n# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session","metadata":{"_uuid":"8f2839f25d086af736a60e9eeb907d3b93b6e0e5","_cell_guid":"b1076dfc-b9ad-4769-8c92-a6c4dae69d19","execution":{"iopub.status.busy":"2024-08-13T17:33:17.460319Z","iopub.execute_input":"2024-08-13T17:33:17.460939Z","iopub.status.idle":"2024-08-13T17:33:17.855313Z","shell.execute_reply.started":"2024-08-13T17:33:17.460904Z","shell.execute_reply":"2024-08-13T17:33:17.854065Z"},"trusted":true},"execution_count":2,"outputs":[{"name":"stdout","text":"/kaggle/input/titanic/train.csv\n/kaggle/input/titanic/test.csv\n/kaggle/input/titanic/gender_submission.csv\n","output_type":"stream"}]},{"cell_type":"code","source":"#read csv as df\ndf_test = pd.read_csv('/kaggle/input/titanic/test.csv')\ndf_train = pd.read_csv('/kaggle/input/titanic/train.csv')","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:17.857058Z","iopub.execute_input":"2024-08-13T17:33:17.857534Z","iopub.status.idle":"2024-08-13T17:33:17.888355Z","shell.execute_reply.started":"2024-08-13T17:33:17.857505Z","shell.execute_reply":"2024-08-13T17:33:17.887092Z"},"trusted":true},"execution_count":3,"outputs":[]},{"cell_type":"markdown","source":"# EDA (Exploratory data analysis)","metadata":{}},{"cell_type":"markdown","source":"## 1. Data inspection","metadata":{}},{"cell_type":"markdown","source":"","metadata":{}},{"cell_type":"code","source":"df_train.head(10)","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:17.889872Z","iopub.execute_input":"2024-08-13T17:33:17.890261Z","iopub.status.idle":"2024-08-13T17:33:17.919391Z","shell.execute_reply.started":"2024-08-13T17:33:17.890209Z","shell.execute_reply":"2024-08-13T17:33:17.918241Z"},"trusted":true},"execution_count":4,"outputs":[{"execution_count":4,"output_type":"execute_result","data":{"text/plain":"   PassengerId  Survived  Pclass  \\\n0            1         0       3   \n1            2         1       1   \n2            3         1       3   \n3            4         1       1   \n4            5         0       3   \n5            6         0       3   \n6            7         0       1   \n7            8         0       3   \n8            9         1       3   \n9           10         1       2   \n\n                                                Name     Sex   Age  SibSp  \\\n0                            Braund, Mr. Owen Harris    male  22.0      1   \n1  Cumings, Mrs. John Bradley (Florence Briggs Th...  female  38.0      1   \n2                             Heikkinen, Miss. Laina  female  26.0      0   \n3       Futrelle, Mrs. Jacques Heath (Lily May Peel)  female  35.0      1   \n4                           Allen, Mr. William Henry    male  35.0      0   \n5                                   Moran, Mr. James    male   NaN      0   \n6                            McCarthy, Mr. Timothy J    male  54.0      0   \n7                     Palsson, Master. Gosta Leonard    male   2.0      3   \n8  Johnson, Mrs. Oscar W (Elisabeth Vilhelmina Berg)  female  27.0      0   \n9                Nasser, Mrs. Nicholas (Adele Achem)  female  14.0      1   \n\n   Parch            Ticket     Fare Cabin Embarked  \n0      0         A/5 21171   7.2500   NaN        S  \n1      0          PC 17599  71.2833   C85        C  \n2      0  STON/O2. 3101282   7.9250   NaN        S  \n3      0            113803  53.1000  C123        S  \n4      0            373450   8.0500   NaN        S  \n5      0            330877   8.4583   NaN        Q  \n6      0             17463  51.8625   E46        S  \n7      1            349909  21.0750   NaN        S  \n8      2            347742  11.1333   NaN        S  \n9      0            237736  30.0708   NaN        C  ","text/html":"<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>PassengerId</th>\n      <th>Survived</th>\n      <th>Pclass</th>\n      <th>Name</th>\n      <th>Sex</th>\n      <th>Age</th>\n      <th>SibSp</th>\n      <th>Parch</th>\n      <th>Ticket</th>\n      <th>Fare</th>\n      <th>Cabin</th>\n      <th>Embarked</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>1</td>\n      <td>0</td>\n      <td>3</td>\n      <td>Braund, Mr. Owen Harris</td>\n      <td>male</td>\n      <td>22.0</td>\n      <td>1</td>\n      <td>0</td>\n      <td>A/5 21171</td>\n      <td>7.2500</td>\n      <td>NaN</td>\n      <td>S</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>2</td>\n      <td>1</td>\n      <td>1</td>\n      <td>Cumings, Mrs. John Bradley (Florence Briggs Th...</td>\n      <td>female</td>\n      <td>38.0</td>\n      <td>1</td>\n      <td>0</td>\n      <td>PC 17599</td>\n      <td>71.2833</td>\n      <td>C85</td>\n      <td>C</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>3</td>\n      <td>1</td>\n      <td>3</td>\n      <td>Heikkinen, Miss. Laina</td>\n      <td>female</td>\n      <td>26.0</td>\n      <td>0</td>\n      <td>0</td>\n      <td>STON/O2. 3101282</td>\n      <td>7.9250</td>\n      <td>NaN</td>\n      <td>S</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>4</td>\n      <td>1</td>\n      <td>1</td>\n      <td>Futrelle, Mrs. Jacques Heath (Lily May Peel)</td>\n      <td>female</td>\n      <td>35.0</td>\n      <td>1</td>\n      <td>0</td>\n      <td>113803</td>\n      <td>53.1000</td>\n      <td>C123</td>\n      <td>S</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>5</td>\n      <td>0</td>\n      <td>3</td>\n      <td>Allen, Mr. William Henry</td>\n      <td>male</td>\n      <td>35.0</td>\n      <td>0</td>\n      <td>0</td>\n      <td>373450</td>\n      <td>8.0500</td>\n      <td>NaN</td>\n      <td>S</td>\n    </tr>\n    <tr>\n      <th>5</th>\n      <td>6</td>\n      <td>0</td>\n      <td>3</td>\n      <td>Moran, Mr. James</td>\n      <td>male</td>\n      <td>NaN</td>\n      <td>0</td>\n      <td>0</td>\n      <td>330877</td>\n      <td>8.4583</td>\n      <td>NaN</td>\n      <td>Q</td>\n    </tr>\n    <tr>\n      <th>6</th>\n      <td>7</td>\n      <td>0</td>\n      <td>1</td>\n      <td>McCarthy, Mr. Timothy J</td>\n      <td>male</td>\n      <td>54.0</td>\n      <td>0</td>\n      <td>0</td>\n      <td>17463</td>\n      <td>51.8625</td>\n      <td>E46</td>\n      <td>S</td>\n    </tr>\n    <tr>\n      <th>7</th>\n      <td>8</td>\n      <td>0</td>\n      <td>3</td>\n      <td>Palsson, Master. Gosta Leonard</td>\n      <td>male</td>\n      <td>2.0</td>\n      <td>3</td>\n      <td>1</td>\n      <td>349909</td>\n      <td>21.0750</td>\n      <td>NaN</td>\n      <td>S</td>\n    </tr>\n    <tr>\n      <th>8</th>\n      <td>9</td>\n      <td>1</td>\n      <td>3</td>\n      <td>Johnson, Mrs. Oscar W (Elisabeth Vilhelmina Berg)</td>\n      <td>female</td>\n      <td>27.0</td>\n      <td>0</td>\n      <td>2</td>\n      <td>347742</td>\n      <td>11.1333</td>\n      <td>NaN</td>\n      <td>S</td>\n    </tr>\n    <tr>\n      <th>9</th>\n      <td>10</td>\n      <td>1</td>\n      <td>2</td>\n      <td>Nasser, Mrs. Nicholas (Adele Achem)</td>\n      <td>female</td>\n      <td>14.0</td>\n      <td>1</td>\n      <td>0</td>\n      <td>237736</td>\n      <td>30.0708</td>\n      <td>NaN</td>\n      <td>C</td>\n    </tr>\n  </tbody>\n</table>\n</div>"},"metadata":{}}]},{"cell_type":"code","source":"#Checking data types and null values\ndf_train.info()","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:17.921652Z","iopub.execute_input":"2024-08-13T17:33:17.921988Z","iopub.status.idle":"2024-08-13T17:33:17.944454Z","shell.execute_reply.started":"2024-08-13T17:33:17.921959Z","shell.execute_reply":"2024-08-13T17:33:17.943292Z"},"trusted":true},"execution_count":5,"outputs":[{"name":"stdout","text":"<class 'pandas.core.frame.DataFrame'>\nRangeIndex: 891 entries, 0 to 890\nData columns (total 12 columns):\n #   Column       Non-Null Count  Dtype  \n---  ------       --------------  -----  \n 0   PassengerId  891 non-null    int64  \n 1   Survived     891 non-null    int64  \n 2   Pclass       891 non-null    int64  \n 3   Name         891 non-null    object \n 4   Sex          891 non-null    object \n 5   Age          714 non-null    float64\n 6   SibSp        891 non-null    int64  \n 7   Parch        891 non-null    int64  \n 8   Ticket       891 non-null    object \n 9   Fare         891 non-null    float64\n 10  Cabin        204 non-null    object \n 11  Embarked     889 non-null    object \ndtypes: float64(2), int64(5), object(5)\nmemory usage: 83.7+ KB\n","output_type":"stream"}]},{"cell_type":"code","source":"#Shape of dataframe\ndf_train.shape","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:17.946016Z","iopub.execute_input":"2024-08-13T17:33:17.946955Z","iopub.status.idle":"2024-08-13T17:33:17.953725Z","shell.execute_reply.started":"2024-08-13T17:33:17.946917Z","shell.execute_reply":"2024-08-13T17:33:17.952607Z"},"trusted":true},"execution_count":6,"outputs":[{"execution_count":6,"output_type":"execute_result","data":{"text/plain":"(891, 12)"},"metadata":{}}]},{"cell_type":"code","source":"# Check data metrics overview\ndf_train.describe()","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:17.955051Z","iopub.execute_input":"2024-08-13T17:33:17.955409Z","iopub.status.idle":"2024-08-13T17:33:17.998413Z","shell.execute_reply.started":"2024-08-13T17:33:17.955381Z","shell.execute_reply":"2024-08-13T17:33:17.997083Z"},"trusted":true},"execution_count":7,"outputs":[{"execution_count":7,"output_type":"execute_result","data":{"text/plain":"       PassengerId    Survived      Pclass         Age       SibSp  \\\ncount   891.000000  891.000000  891.000000  714.000000  891.000000   \nmean    446.000000    0.383838    2.308642   29.699118    0.523008   \nstd     257.353842    0.486592    0.836071   14.526497    1.102743   \nmin       1.000000    0.000000    1.000000    0.420000    0.000000   \n25%     223.500000    0.000000    2.000000   20.125000    0.000000   \n50%     446.000000    0.000000    3.000000   28.000000    0.000000   \n75%     668.500000    1.000000    3.000000   38.000000    1.000000   \nmax     891.000000    1.000000    3.000000   80.000000    8.000000   \n\n            Parch        Fare  \ncount  891.000000  891.000000  \nmean     0.381594   32.204208  \nstd      0.806057   49.693429  \nmin      0.000000    0.000000  \n25%      0.000000    7.910400  \n50%      0.000000   14.454200  \n75%      0.000000   31.000000  \nmax      6.000000  512.329200  ","text/html":"<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>PassengerId</th>\n      <th>Survived</th>\n      <th>Pclass</th>\n      <th>Age</th>\n      <th>SibSp</th>\n      <th>Parch</th>\n      <th>Fare</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>count</th>\n      <td>891.000000</td>\n      <td>891.000000</td>\n      <td>891.000000</td>\n      <td>714.000000</td>\n      <td>891.000000</td>\n      <td>891.000000</td>\n      <td>891.000000</td>\n    </tr>\n    <tr>\n      <th>mean</th>\n      <td>446.000000</td>\n      <td>0.383838</td>\n      <td>2.308642</td>\n      <td>29.699118</td>\n      <td>0.523008</td>\n      <td>0.381594</td>\n      <td>32.204208</td>\n    </tr>\n    <tr>\n      <th>std</th>\n      <td>257.353842</td>\n      <td>0.486592</td>\n      <td>0.836071</td>\n      <td>14.526497</td>\n      <td>1.102743</td>\n      <td>0.806057</td>\n      <td>49.693429</td>\n    </tr>\n    <tr>\n      <th>min</th>\n      <td>1.000000</td>\n      <td>0.000000</td>\n      <td>1.000000</td>\n      <td>0.420000</td>\n      <td>0.000000</td>\n      <td>0.000000</td>\n      <td>0.000000</td>\n    </tr>\n    <tr>\n      <th>25%</th>\n      <td>223.500000</td>\n      <td>0.000000</td>\n      <td>2.000000</td>\n      <td>20.125000</td>\n      <td>0.000000</td>\n      <td>0.000000</td>\n      <td>7.910400</td>\n    </tr>\n    <tr>\n      <th>50%</th>\n      <td>446.000000</td>\n      <td>0.000000</td>\n      <td>3.000000</td>\n      <td>28.000000</td>\n      <td>0.000000</td>\n      <td>0.000000</td>\n      <td>14.454200</td>\n    </tr>\n    <tr>\n      <th>75%</th>\n      <td>668.500000</td>\n      <td>1.000000</td>\n      <td>3.000000</td>\n      <td>38.000000</td>\n      <td>1.000000</td>\n      <td>0.000000</td>\n      <td>31.000000</td>\n    </tr>\n    <tr>\n      <th>max</th>\n      <td>891.000000</td>\n      <td>1.000000</td>\n      <td>3.000000</td>\n      <td>80.000000</td>\n      <td>8.000000</td>\n      <td>6.000000</td>\n      <td>512.329200</td>\n    </tr>\n  </tbody>\n</table>\n</div>"},"metadata":{}}]},{"cell_type":"markdown","source":"## 2. Data cleaning","metadata":{}},{"cell_type":"code","source":"#Checking for duplicates\ndf_no_duplicates = df_train.drop_duplicates()","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:17.999770Z","iopub.execute_input":"2024-08-13T17:33:18.000187Z","iopub.status.idle":"2024-08-13T17:33:18.008693Z","shell.execute_reply.started":"2024-08-13T17:33:18.000149Z","shell.execute_reply":"2024-08-13T17:33:18.007539Z"},"trusted":true},"execution_count":8,"outputs":[]},{"cell_type":"code","source":"#No duplicates\ndf_no_duplicates.shape","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:18.010161Z","iopub.execute_input":"2024-08-13T17:33:18.010525Z","iopub.status.idle":"2024-08-13T17:33:18.020959Z","shell.execute_reply.started":"2024-08-13T17:33:18.010497Z","shell.execute_reply":"2024-08-13T17:33:18.019834Z"},"trusted":true},"execution_count":9,"outputs":[{"execution_count":9,"output_type":"execute_result","data":{"text/plain":"(891, 12)"},"metadata":{}}]},{"cell_type":"markdown","source":"# 3. Feature Engineering ","metadata":{}},{"cell_type":"markdown","source":"## Creating new features","metadata":{}},{"cell_type":"code","source":"# Create new column cabin_number base on the first value or letter of cabin\ndf_train['Cabin_letter'] = df_train['Cabin'].str[0]","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:18.022508Z","iopub.execute_input":"2024-08-13T17:33:18.022903Z","iopub.status.idle":"2024-08-13T17:33:18.034530Z","shell.execute_reply.started":"2024-08-13T17:33:18.022868Z","shell.execute_reply":"2024-08-13T17:33:18.033208Z"},"trusted":true},"execution_count":10,"outputs":[]},{"cell_type":"code","source":"#Replace sex by gender (numeric)\ndf_train['Gender'] = df_train['Sex'].map({'male':0, 'female':1})","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:18.039020Z","iopub.execute_input":"2024-08-13T17:33:18.039521Z","iopub.status.idle":"2024-08-13T17:33:18.048525Z","shell.execute_reply.started":"2024-08-13T17:33:18.039481Z","shell.execute_reply":"2024-08-13T17:33:18.047437Z"},"trusted":true},"execution_count":11,"outputs":[]},{"cell_type":"code","source":"#Drop columns\ndf_train = df_train.drop(['PassengerId','Name','Cabin','Ticket'],axis = 1)","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:18.049841Z","iopub.execute_input":"2024-08-13T17:33:18.050184Z","iopub.status.idle":"2024-08-13T17:33:18.065822Z","shell.execute_reply.started":"2024-08-13T17:33:18.050157Z","shell.execute_reply":"2024-08-13T17:33:18.064615Z"},"trusted":true},"execution_count":12,"outputs":[]},{"cell_type":"code","source":"df_train.info()","metadata":{"execution":{"iopub.status.busy":"2024-08-13T18:12:27.818539Z","iopub.execute_input":"2024-08-13T18:12:27.819037Z","iopub.status.idle":"2024-08-13T18:12:27.833429Z","shell.execute_reply.started":"2024-08-13T18:12:27.818986Z","shell.execute_reply":"2024-08-13T18:12:27.832303Z"},"trusted":true},"execution_count":45,"outputs":[{"name":"stdout","text":"<class 'pandas.core.frame.DataFrame'>\nRangeIndex: 891 entries, 0 to 890\nData columns (total 10 columns):\n #   Column        Non-Null Count  Dtype  \n---  ------        --------------  -----  \n 0   Survived      891 non-null    int64  \n 1   Pclass        891 non-null    int64  \n 2   Sex           891 non-null    object \n 3   Age           714 non-null    float64\n 4   SibSp         891 non-null    int64  \n 5   Parch         891 non-null    int64  \n 6   Fare          891 non-null    float64\n 7   Embarked      889 non-null    object \n 8   Cabin_letter  204 non-null    object \n 9   Gender        891 non-null    int64  \ndtypes: float64(2), int64(5), object(3)\nmemory usage: 69.7+ KB\n","output_type":"stream"}]},{"cell_type":"code","source":"from sklearn.ensemble import RandomForestClassifier\n\ny = df_train[\"Survived\"]\n\nfeatures = [\"Pclass\", \"Sex\", \"SibSp\", \"Parch\"]\nX = pd.get_dummies(df_train[[\"Pclass\", \"Sex\", \"SibSp\", \"Parch\",'Age','Fare','Embarked']])\nX_test = pd.get_dummies(df_test[features])\n\nmodel = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=1)\nmodel.fit(X, y)\npredictions = model.predict(X_test)\n\noutput = pd.DataFrame({'PassengerId': df_test.PassengerId, 'Survived': predictions})\noutput.to_csv('submission.csv', index=False)\nprint(\"Your submission was successfully saved!\")","metadata":{"execution":{"iopub.status.busy":"2024-08-13T18:11:29.525287Z","iopub.execute_input":"2024-08-13T18:11:29.525719Z","iopub.status.idle":"2024-08-13T18:11:30.103235Z","shell.execute_reply.started":"2024-08-13T18:11:29.525688Z","shell.execute_reply":"2024-08-13T18:11:30.101598Z"},"trusted":true},"execution_count":44,"outputs":[{"traceback":["\u001b[0;31m---------------------------------------------------------------------------\u001b[0m","\u001b[0;31mValueError\u001b[0m                                Traceback (most recent call last)","Cell \u001b[0;32mIn[44], line 10\u001b[0m\n\u001b[1;32m      7\u001b[0m X_test \u001b[38;5;241m=\u001b[39m pd\u001b[38;5;241m.\u001b[39mget_dummies(df_test[features])\n\u001b[1;32m      9\u001b[0m model \u001b[38;5;241m=\u001b[39m RandomForestClassifier(n_estimators\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m100\u001b[39m, max_depth\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m5\u001b[39m, random_state\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m1\u001b[39m)\n\u001b[0;32m---> 10\u001b[0m \u001b[43mmodel\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mfit\u001b[49m\u001b[43m(\u001b[49m\u001b[43mX\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43my\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m     11\u001b[0m predictions \u001b[38;5;241m=\u001b[39m model\u001b[38;5;241m.\u001b[39mpredict(X_test)\n\u001b[1;32m     13\u001b[0m output \u001b[38;5;241m=\u001b[39m pd\u001b[38;5;241m.\u001b[39mDataFrame({\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mPassengerId\u001b[39m\u001b[38;5;124m'\u001b[39m: df_test\u001b[38;5;241m.\u001b[39mPassengerId, \u001b[38;5;124m'\u001b[39m\u001b[38;5;124mSurvived\u001b[39m\u001b[38;5;124m'\u001b[39m: predictions})\n","File \u001b[0;32m/opt/conda/lib/python3.10/site-packages/sklearn/ensemble/_forest.py:345\u001b[0m, in \u001b[0;36mBaseForest.fit\u001b[0;34m(self, X, y, sample_weight)\u001b[0m\n\u001b[1;32m    343\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m issparse(y):\n\u001b[1;32m    344\u001b[0m     \u001b[38;5;28;01mraise\u001b[39;00m \u001b[38;5;167;01mValueError\u001b[39;00m(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124msparse multilabel-indicator for y is not supported.\u001b[39m\u001b[38;5;124m\"\u001b[39m)\n\u001b[0;32m--> 345\u001b[0m X, y \u001b[38;5;241m=\u001b[39m \u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43m_validate_data\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m    346\u001b[0m \u001b[43m    \u001b[49m\u001b[43mX\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43my\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mmulti_output\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;28;43;01mTrue\u001b[39;49;00m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43maccept_sparse\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mcsc\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mdtype\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mDTYPE\u001b[49m\n\u001b[1;32m    347\u001b[0m \u001b[43m\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    348\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m sample_weight \u001b[38;5;129;01mis\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;28;01mNone\u001b[39;00m:\n\u001b[1;32m    349\u001b[0m     sample_weight \u001b[38;5;241m=\u001b[39m _check_sample_weight(sample_weight, X)\n","File \u001b[0;32m/opt/conda/lib/python3.10/site-packages/sklearn/base.py:584\u001b[0m, in \u001b[0;36mBaseEstimator._validate_data\u001b[0;34m(self, X, y, reset, validate_separately, **check_params)\u001b[0m\n\u001b[1;32m    582\u001b[0m         y \u001b[38;5;241m=\u001b[39m check_array(y, input_name\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124my\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;241m*\u001b[39m\u001b[38;5;241m*\u001b[39mcheck_y_params)\n\u001b[1;32m    583\u001b[0m     \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[0;32m--> 584\u001b[0m         X, y \u001b[38;5;241m=\u001b[39m \u001b[43mcheck_X_y\u001b[49m\u001b[43m(\u001b[49m\u001b[43mX\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43my\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43mcheck_params\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    585\u001b[0m     out \u001b[38;5;241m=\u001b[39m X, y\n\u001b[1;32m    587\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m no_val_X \u001b[38;5;129;01mand\u001b[39;00m check_params\u001b[38;5;241m.\u001b[39mget(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mensure_2d\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;28;01mTrue\u001b[39;00m):\n","File \u001b[0;32m/opt/conda/lib/python3.10/site-packages/sklearn/utils/validation.py:1106\u001b[0m, in \u001b[0;36mcheck_X_y\u001b[0;34m(X, y, accept_sparse, accept_large_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, multi_output, ensure_min_samples, ensure_min_features, y_numeric, estimator)\u001b[0m\n\u001b[1;32m   1101\u001b[0m         estimator_name \u001b[38;5;241m=\u001b[39m _check_estimator_name(estimator)\n\u001b[1;32m   1102\u001b[0m     \u001b[38;5;28;01mraise\u001b[39;00m \u001b[38;5;167;01mValueError\u001b[39;00m(\n\u001b[1;32m   1103\u001b[0m         \u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;132;01m{\u001b[39;00mestimator_name\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m requires y to be passed, but the target y is None\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m   1104\u001b[0m     )\n\u001b[0;32m-> 1106\u001b[0m X \u001b[38;5;241m=\u001b[39m \u001b[43mcheck_array\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m   1107\u001b[0m \u001b[43m    \u001b[49m\u001b[43mX\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1108\u001b[0m \u001b[43m    \u001b[49m\u001b[43maccept_sparse\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43maccept_sparse\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1109\u001b[0m \u001b[43m    \u001b[49m\u001b[43maccept_large_sparse\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43maccept_large_sparse\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1110\u001b[0m \u001b[43m    \u001b[49m\u001b[43mdtype\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mdtype\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1111\u001b[0m \u001b[43m    \u001b[49m\u001b[43morder\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43morder\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1112\u001b[0m \u001b[43m    \u001b[49m\u001b[43mcopy\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mcopy\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1113\u001b[0m \u001b[43m    \u001b[49m\u001b[43mforce_all_finite\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mforce_all_finite\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1114\u001b[0m \u001b[43m    \u001b[49m\u001b[43mensure_2d\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mensure_2d\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1115\u001b[0m \u001b[43m    \u001b[49m\u001b[43mallow_nd\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mallow_nd\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1116\u001b[0m \u001b[43m    \u001b[49m\u001b[43mensure_min_samples\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mensure_min_samples\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1117\u001b[0m \u001b[43m    \u001b[49m\u001b[43mensure_min_features\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mensure_min_features\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1118\u001b[0m \u001b[43m    \u001b[49m\u001b[43mestimator\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mestimator\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1119\u001b[0m \u001b[43m    \u001b[49m\u001b[43minput_name\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mX\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1120\u001b[0m \u001b[43m\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   1122\u001b[0m y \u001b[38;5;241m=\u001b[39m _check_y(y, multi_output\u001b[38;5;241m=\u001b[39mmulti_output, y_numeric\u001b[38;5;241m=\u001b[39my_numeric, estimator\u001b[38;5;241m=\u001b[39mestimator)\n\u001b[1;32m   1124\u001b[0m check_consistent_length(X, y)\n","File \u001b[0;32m/opt/conda/lib/python3.10/site-packages/sklearn/utils/validation.py:921\u001b[0m, in \u001b[0;36mcheck_array\u001b[0;34m(array, accept_sparse, accept_large_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, ensure_min_samples, ensure_min_features, estimator, input_name)\u001b[0m\n\u001b[1;32m    915\u001b[0m         \u001b[38;5;28;01mraise\u001b[39;00m \u001b[38;5;167;01mValueError\u001b[39;00m(\n\u001b[1;32m    916\u001b[0m             \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mFound array with dim \u001b[39m\u001b[38;5;132;01m%d\u001b[39;00m\u001b[38;5;124m. \u001b[39m\u001b[38;5;132;01m%s\u001b[39;00m\u001b[38;5;124m expected <= 2.\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m    917\u001b[0m             \u001b[38;5;241m%\u001b[39m (array\u001b[38;5;241m.\u001b[39mndim, estimator_name)\n\u001b[1;32m    918\u001b[0m         )\n\u001b[1;32m    920\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m force_all_finite:\n\u001b[0;32m--> 921\u001b[0m         \u001b[43m_assert_all_finite\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m    922\u001b[0m \u001b[43m            \u001b[49m\u001b[43marray\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    923\u001b[0m \u001b[43m            \u001b[49m\u001b[43minput_name\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43minput_name\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    924\u001b[0m \u001b[43m            \u001b[49m\u001b[43mestimator_name\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mestimator_name\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m    925\u001b[0m \u001b[43m            \u001b[49m\u001b[43mallow_nan\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mforce_all_finite\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m==\u001b[39;49m\u001b[43m \u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mallow-nan\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m,\u001b[49m\n\u001b[1;32m    926\u001b[0m \u001b[43m        \u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    928\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m ensure_min_samples \u001b[38;5;241m>\u001b[39m \u001b[38;5;241m0\u001b[39m:\n\u001b[1;32m    929\u001b[0m     n_samples \u001b[38;5;241m=\u001b[39m _num_samples(array)\n","File \u001b[0;32m/opt/conda/lib/python3.10/site-packages/sklearn/utils/validation.py:161\u001b[0m, in \u001b[0;36m_assert_all_finite\u001b[0;34m(X, allow_nan, msg_dtype, estimator_name, input_name)\u001b[0m\n\u001b[1;32m    144\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m estimator_name \u001b[38;5;129;01mand\u001b[39;00m input_name \u001b[38;5;241m==\u001b[39m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mX\u001b[39m\u001b[38;5;124m\"\u001b[39m \u001b[38;5;129;01mand\u001b[39;00m has_nan_error:\n\u001b[1;32m    145\u001b[0m     \u001b[38;5;66;03m# Improve the error message on how to handle missing values in\u001b[39;00m\n\u001b[1;32m    146\u001b[0m     \u001b[38;5;66;03m# scikit-learn.\u001b[39;00m\n\u001b[1;32m    147\u001b[0m     msg_err \u001b[38;5;241m+\u001b[39m\u001b[38;5;241m=\u001b[39m (\n\u001b[1;32m    148\u001b[0m         \u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;130;01m\\n\u001b[39;00m\u001b[38;5;132;01m{\u001b[39;00mestimator_name\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m does not accept missing values\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m    149\u001b[0m         \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124m encoded as NaN natively. For supervised learning, you might want\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[0;32m   (...)\u001b[0m\n\u001b[1;32m    159\u001b[0m         \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124m#estimators-that-handle-nan-values\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m    160\u001b[0m     )\n\u001b[0;32m--> 161\u001b[0m \u001b[38;5;28;01mraise\u001b[39;00m \u001b[38;5;167;01mValueError\u001b[39;00m(msg_err)\n","\u001b[0;31mValueError\u001b[0m: Input X contains NaN.\nRandomForestClassifier does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values"],"ename":"ValueError","evalue":"Input X contains NaN.\nRandomForestClassifier does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values","output_type":"error"}]},{"cell_type":"markdown","source":"","metadata":{}},{"cell_type":"code","source":"from sklearn.ensemble import RandomForestClassifier\n\ny = df_train[\"Survived\"]\n\nfeatures = [\"Pclass\", \"Sex\", \"SibSp\", \"Parch\"]\nX = pd.get_dummies(df_train[features])\nX_test = pd.get_dummies(df_test[features])\n\nmodel = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=1)\nmodel.fit(X, y)\npredictions = model.predict(X_test)\n\noutput = pd.DataFrame({'PassengerId': df_test.PassengerId, 'Survived': predictions})\noutput.to_csv('submission.csv', index=False)\nprint(\"Your submission was successfully saved!\")","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:33:19.206593Z","iopub.execute_input":"2024-08-13T17:33:19.207024Z","iopub.status.idle":"2024-08-13T17:33:19.416603Z","shell.execute_reply.started":"2024-08-13T17:33:19.206988Z","shell.execute_reply":"2024-08-13T17:33:19.415691Z"},"trusted":true},"execution_count":14,"outputs":[{"name":"stdout","text":"Your submission was successfully saved!\n","output_type":"stream"}]},{"cell_type":"code","source":"from sklearn.model_selection import train_test_split","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:37:37.729632Z","iopub.execute_input":"2024-08-13T17:37:37.730073Z","iopub.status.idle":"2024-08-13T17:37:37.735046Z","shell.execute_reply.started":"2024-08-13T17:37:37.730041Z","shell.execute_reply":"2024-08-13T17:37:37.733758Z"},"trusted":true},"execution_count":21,"outputs":[]},{"cell_type":"code","source":"# Create dummy variables\nX_train = pd.get_dummies(df_train[features])\ny_train = df_train['Survived']","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:37:39.207551Z","iopub.execute_input":"2024-08-13T17:37:39.208001Z","iopub.status.idle":"2024-08-13T17:37:39.217424Z","shell.execute_reply.started":"2024-08-13T17:37:39.207968Z","shell.execute_reply":"2024-08-13T17:37:39.216300Z"},"trusted":true},"execution_count":22,"outputs":[]},{"cell_type":"code","source":"# Split the data\nX_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, \n                                            stratify=y_train, random_state=10)\n","metadata":{"execution":{"iopub.status.busy":"2024-08-13T17:37:41.050354Z","iopub.execute_input":"2024-08-13T17:37:41.051196Z","iopub.status.idle":"2024-08-13T17:37:41.061360Z","shell.execute_reply.started":"2024-08-13T17:37:41.051159Z","shell.execute_reply":"2024-08-13T17:37:41.059975Z"},"trusted":true},"execution_count":23,"outputs":[]},{"cell_type":"code","source":"# Create a split index: 0 for training, 1 for validation\nsplit_index = [0 if x in X_val.index else -1 for x in X_train.index]","metadata":{"execution":{"iopub.status.busy":"2024-08-13T18:01:08.719732Z","iopub.execute_input":"2024-08-13T18:01:08.720257Z","iopub.status.idle":"2024-08-13T18:01:08.727251Z","shell.execute_reply.started":"2024-08-13T18:01:08.720203Z","shell.execute_reply":"2024-08-13T18:01:08.726030Z"},"trusted":true},"execution_count":30,"outputs":[]},{"cell_type":"code","source":"from sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import GridSearchCV\nfrom sklearn.model_selection import PredefinedSplit","metadata":{"execution":{"iopub.status.busy":"2024-08-13T18:01:12.542543Z","iopub.execute_input":"2024-08-13T18:01:12.543379Z","iopub.status.idle":"2024-08-13T18:01:12.548358Z","shell.execute_reply.started":"2024-08-13T18:01:12.543341Z","shell.execute_reply":"2024-08-13T18:01:12.547245Z"},"trusted":true},"execution_count":32,"outputs":[]},{"cell_type":"code","source":"%%time\n# Initialize random forest model variable\nrf = RandomForestClassifier(random_state=0)\n\n# Define Cross validation dictionary \ncv_params = {'max_depth': [2,5, None], \n             'min_samples_leaf': [1,3],\n             'min_samples_split': [2,4],\n             'max_features': [2,4,6,8,10],\n             'n_estimators': [75, 125, 150, 200]\n             }  \n\n# Define scores to evaluate model\nscoring = {'accuracy', 'precision', 'recall', 'f1'}\n\n# Use PredefinedSplit function pass the list to GridSearchCV\n#Then we'll use this variable for the `cv` argument when we instantiate `GridSearchCV`.\n\n# Performs validation on this defined cv_params validation set\nrf_val = GridSearchCV(rf, cv_params, cv=custom_split, refit='f1', n_jobs = -1, verbose = 1)\n\n#Fit the model\nrf_val.fit(X_train, y_train)","metadata":{"execution":{"iopub.status.busy":"2024-08-13T18:07:56.182652Z","iopub.execute_input":"2024-08-13T18:07:56.183088Z","iopub.status.idle":"2024-08-13T18:08:04.872700Z","shell.execute_reply.started":"2024-08-13T18:07:56.183057Z","shell.execute_reply":"2024-08-13T18:08:04.871412Z"},"trusted":true},"execution_count":40,"outputs":[{"name":"stdout","text":"Fitting 1 folds for each of 72 candidates, totalling 72 fits\nCPU times: user 353 ms, sys: 88.2 ms, total: 441 ms\nWall time: 8.67 s\n","output_type":"stream"},{"execution_count":40,"output_type":"execute_result","data":{"text/plain":"GridSearchCV(cv=PredefinedSplit(test_fold=array([-1, -1, ..., -1, -1])),\n             estimator=RandomForestClassifier(random_state=0), n_jobs=-1,\n             param_grid={'max_depth': [2, 5, None], 'max_features': [2, 4],\n                         'min_samples_leaf': [1, 3],\n                         'min_samples_split': [2, 4],\n                         'n_estimators': [75, 125, 150]},\n             refit='f1', verbose=1)","text/html":"<style>#sk-container-id-3 {color: black;background-color: white;}#sk-container-id-3 pre{padding: 0;}#sk-container-id-3 div.sk-toggleable {background-color: white;}#sk-container-id-3 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-3 label.sk-toggleable__label-arrow:before {content: \"▸\";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-3 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-3 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-3 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-3 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-3 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-3 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: \"▾\";}#sk-container-id-3 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-3 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-3 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-3 div.sk-parallel-item::after {content: \"\";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-3 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 div.sk-serial::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-3 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-3 div.sk-item {position: relative;z-index: 1;}#sk-container-id-3 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-3 div.sk-item::before, #sk-container-id-3 div.sk-parallel-item::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-3 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-3 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-3 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-3 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-3 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-3 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-3 div.sk-label-container {text-align: center;}#sk-container-id-3 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-3 div.sk-text-repr-fallback {display: none;}</style><div id=\"sk-container-id-3\" class=\"sk-top-container\"><div class=\"sk-text-repr-fallback\"><pre>GridSearchCV(cv=PredefinedSplit(test_fold=array([-1, -1, ..., -1, -1])),\n             estimator=RandomForestClassifier(random_state=0), n_jobs=-1,\n             param_grid={&#x27;max_depth&#x27;: [2, 5, None], &#x27;max_features&#x27;: [2, 4],\n                         &#x27;min_samples_leaf&#x27;: [1, 3],\n                         &#x27;min_samples_split&#x27;: [2, 4],\n                         &#x27;n_estimators&#x27;: [75, 125, 150]},\n             refit=&#x27;f1&#x27;, verbose=1)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class=\"sk-container\" hidden><div class=\"sk-item sk-dashed-wrapped\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-7\" type=\"checkbox\" ><label for=\"sk-estimator-id-7\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">GridSearchCV</label><div class=\"sk-toggleable__content\"><pre>GridSearchCV(cv=PredefinedSplit(test_fold=array([-1, -1, ..., -1, -1])),\n             estimator=RandomForestClassifier(random_state=0), n_jobs=-1,\n             param_grid={&#x27;max_depth&#x27;: [2, 5, None], &#x27;max_features&#x27;: [2, 4],\n                         &#x27;min_samples_leaf&#x27;: [1, 3],\n                         &#x27;min_samples_split&#x27;: [2, 4],\n                         &#x27;n_estimators&#x27;: [75, 125, 150]},\n             refit=&#x27;f1&#x27;, verbose=1)</pre></div></div></div><div class=\"sk-parallel\"><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-8\" type=\"checkbox\" ><label for=\"sk-estimator-id-8\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">estimator: RandomForestClassifier</label><div class=\"sk-toggleable__content\"><pre>RandomForestClassifier(random_state=0)</pre></div></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-9\" type=\"checkbox\" ><label for=\"sk-estimator-id-9\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">RandomForestClassifier</label><div class=\"sk-toggleable__content\"><pre>RandomForestClassifier(random_state=0)</pre></div></div></div></div></div></div></div></div></div></div>"},"metadata":{}}]},{"cell_type":"code","source":"#Checking for the best parameters combination\nrf_val.best_params_","metadata":{"execution":{"iopub.status.busy":"2024-08-13T18:01:40.937393Z","iopub.execute_input":"2024-08-13T18:01:40.938213Z","iopub.status.idle":"2024-08-13T18:01:40.944748Z","shell.execute_reply.started":"2024-08-13T18:01:40.938170Z","shell.execute_reply":"2024-08-13T18:01:40.943727Z"},"trusted":true},"execution_count":34,"outputs":[{"execution_count":34,"output_type":"execute_result","data":{"text/plain":"{'max_depth': 2,\n 'max_features': 4,\n 'min_samples_leaf': 1,\n 'min_samples_split': 2,\n 'n_estimators': 75}"},"metadata":{}}]},{"cell_type":"code","source":"#Execute random forest with parameters\nclassification = RandomForestClassifier(n_estimators=125,min_samples_split=2,min_samples_leaf=1,max_depth=2,max_features=4)\n\n#Fit the model\nclassification.fit(X_train, y_train)\n\n#Predict values to check performance with new data\nrf_cv_results = classification.predict(X_test)\n\noutput = pd.DataFrame({'PassengerId': df_test.PassengerId, 'Survived': rf_cv_results})\noutput.to_csv('submission_cv.csv', index=False)\nprint(\"Your submission was successfully saved!\")","metadata":{"execution":{"iopub.status.busy":"2024-08-13T18:06:35.124020Z","iopub.execute_input":"2024-08-13T18:06:35.124433Z","iopub.status.idle":"2024-08-13T18:06:35.363422Z","shell.execute_reply.started":"2024-08-13T18:06:35.124403Z","shell.execute_reply":"2024-08-13T18:06:35.362197Z"},"trusted":true},"execution_count":39,"outputs":[{"name":"stdout","text":"Your submission was successfully saved!\n","output_type":"stream"}]}]}
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "b62a9eb3",
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:06.439663Z",
+     "iopub.status.busy": "2024-08-21T13:03:06.439228Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.422943Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.421522Z"
+    },
+    "papermill": {
+     "duration": 0.99672,
+     "end_time": "2024-08-21T13:03:07.425866",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:06.429146",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/kaggle/input/titanic/train.csv\n",
+      "/kaggle/input/titanic/test.csv\n",
+      "/kaggle/input/titanic/gender_submission.csv\n"
+     ]
+    }
+   ],
+   "source": [
+    "# This Python 3 environment comes with many helpful analytics libraries installed\n",
+    "# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python\n",
+    "# For example, here's several helpful packages to load\n",
+    "\n",
+    "import numpy as np # linear algebra\n",
+    "import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n",
+    "\n",
+    "# Input data files are available in the read-only \"../input/\" directory\n",
+    "# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory\n",
+    "\n",
+    "import os\n",
+    "for dirname, _, filenames in os.walk('/kaggle/input'):\n",
+    "    for filename in filenames:\n",
+    "        print(os.path.join(dirname, filename))\n",
+    "\n",
+    "# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using \"Save & Run All\" \n",
+    "# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "249bbdf1",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.452103Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.451601Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.481106Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.479805Z"
+    },
+    "papermill": {
+     "duration": 0.046155,
+     "end_time": "2024-08-21T13:03:07.484316",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.438161",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#read csv as df\n",
+    "df_test = pd.read_csv('/kaggle/input/titanic/test.csv')\n",
+    "df_train = pd.read_csv('/kaggle/input/titanic/train.csv')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2539c0d1",
+   "metadata": {
+    "papermill": {
+     "duration": 0.007868,
+     "end_time": "2024-08-21T13:03:07.500683",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.492815",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# EDA (Exploratory data analysis)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8213281b",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008199,
+     "end_time": "2024-08-21T13:03:07.517093",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.508894",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 1. Data inspection"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "b4c1b547",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.535001Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.534608Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.575399Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.573738Z"
+    },
+    "papermill": {
+     "duration": 0.053383,
+     "end_time": "2024-08-21T13:03:07.578851",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.525468",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>PassengerId</th>\n",
+       "      <th>Survived</th>\n",
+       "      <th>Pclass</th>\n",
+       "      <th>Name</th>\n",
+       "      <th>Sex</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>SibSp</th>\n",
+       "      <th>Parch</th>\n",
+       "      <th>Ticket</th>\n",
+       "      <th>Fare</th>\n",
+       "      <th>Cabin</th>\n",
+       "      <th>Embarked</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Braund, Mr. Owen Harris</td>\n",
+       "      <td>male</td>\n",
+       "      <td>22.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>A/5 21171</td>\n",
+       "      <td>7.2500</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>S</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>Cumings, Mrs. John Bradley (Florence Briggs Th...</td>\n",
+       "      <td>female</td>\n",
+       "      <td>38.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>PC 17599</td>\n",
+       "      <td>71.2833</td>\n",
+       "      <td>C85</td>\n",
+       "      <td>C</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Heikkinen, Miss. Laina</td>\n",
+       "      <td>female</td>\n",
+       "      <td>26.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>STON/O2. 3101282</td>\n",
+       "      <td>7.9250</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>S</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>Futrelle, Mrs. Jacques Heath (Lily May Peel)</td>\n",
+       "      <td>female</td>\n",
+       "      <td>35.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>113803</td>\n",
+       "      <td>53.1000</td>\n",
+       "      <td>C123</td>\n",
+       "      <td>S</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5</td>\n",
+       "      <td>0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Allen, Mr. William Henry</td>\n",
+       "      <td>male</td>\n",
+       "      <td>35.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>373450</td>\n",
+       "      <td>8.0500</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>S</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>6</td>\n",
+       "      <td>0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Moran, Mr. James</td>\n",
+       "      <td>male</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>330877</td>\n",
+       "      <td>8.4583</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Q</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>7</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>McCarthy, Mr. Timothy J</td>\n",
+       "      <td>male</td>\n",
+       "      <td>54.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>17463</td>\n",
+       "      <td>51.8625</td>\n",
+       "      <td>E46</td>\n",
+       "      <td>S</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>8</td>\n",
+       "      <td>0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Palsson, Master. Gosta Leonard</td>\n",
+       "      <td>male</td>\n",
+       "      <td>2.0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>349909</td>\n",
+       "      <td>21.0750</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>S</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>9</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Johnson, Mrs. Oscar W (Elisabeth Vilhelmina Berg)</td>\n",
+       "      <td>female</td>\n",
+       "      <td>27.0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2</td>\n",
+       "      <td>347742</td>\n",
+       "      <td>11.1333</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>S</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>10</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Nasser, Mrs. Nicholas (Adele Achem)</td>\n",
+       "      <td>female</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>237736</td>\n",
+       "      <td>30.0708</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>C</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   PassengerId  Survived  Pclass  \\\n",
+       "0            1         0       3   \n",
+       "1            2         1       1   \n",
+       "2            3         1       3   \n",
+       "3            4         1       1   \n",
+       "4            5         0       3   \n",
+       "5            6         0       3   \n",
+       "6            7         0       1   \n",
+       "7            8         0       3   \n",
+       "8            9         1       3   \n",
+       "9           10         1       2   \n",
+       "\n",
+       "                                                Name     Sex   Age  SibSp  \\\n",
+       "0                            Braund, Mr. Owen Harris    male  22.0      1   \n",
+       "1  Cumings, Mrs. John Bradley (Florence Briggs Th...  female  38.0      1   \n",
+       "2                             Heikkinen, Miss. Laina  female  26.0      0   \n",
+       "3       Futrelle, Mrs. Jacques Heath (Lily May Peel)  female  35.0      1   \n",
+       "4                           Allen, Mr. William Henry    male  35.0      0   \n",
+       "5                                   Moran, Mr. James    male   NaN      0   \n",
+       "6                            McCarthy, Mr. Timothy J    male  54.0      0   \n",
+       "7                     Palsson, Master. Gosta Leonard    male   2.0      3   \n",
+       "8  Johnson, Mrs. Oscar W (Elisabeth Vilhelmina Berg)  female  27.0      0   \n",
+       "9                Nasser, Mrs. Nicholas (Adele Achem)  female  14.0      1   \n",
+       "\n",
+       "   Parch            Ticket     Fare Cabin Embarked  \n",
+       "0      0         A/5 21171   7.2500   NaN        S  \n",
+       "1      0          PC 17599  71.2833   C85        C  \n",
+       "2      0  STON/O2. 3101282   7.9250   NaN        S  \n",
+       "3      0            113803  53.1000  C123        S  \n",
+       "4      0            373450   8.0500   NaN        S  \n",
+       "5      0            330877   8.4583   NaN        Q  \n",
+       "6      0             17463  51.8625   E46        S  \n",
+       "7      1            349909  21.0750   NaN        S  \n",
+       "8      2            347742  11.1333   NaN        S  \n",
+       "9      0            237736  30.0708   NaN        C  "
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Check first rows\n",
+    "df_train.head(10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "a7aab270",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.598495Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.597252Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.624000Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.622309Z"
+    },
+    "papermill": {
+     "duration": 0.039005,
+     "end_time": "2024-08-21T13:03:07.626655",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.587650",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 891 entries, 0 to 890\n",
+      "Data columns (total 12 columns):\n",
+      " #   Column       Non-Null Count  Dtype  \n",
+      "---  ------       --------------  -----  \n",
+      " 0   PassengerId  891 non-null    int64  \n",
+      " 1   Survived     891 non-null    int64  \n",
+      " 2   Pclass       891 non-null    int64  \n",
+      " 3   Name         891 non-null    object \n",
+      " 4   Sex          891 non-null    object \n",
+      " 5   Age          714 non-null    float64\n",
+      " 6   SibSp        891 non-null    int64  \n",
+      " 7   Parch        891 non-null    int64  \n",
+      " 8   Ticket       891 non-null    object \n",
+      " 9   Fare         891 non-null    float64\n",
+      " 10  Cabin        204 non-null    object \n",
+      " 11  Embarked     889 non-null    object \n",
+      "dtypes: float64(2), int64(5), object(5)\n",
+      "memory usage: 83.7+ KB\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Checking data types and null values\n",
+    "df_train.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "bf159385",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.646932Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.645608Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.653756Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.652498Z"
+    },
+    "papermill": {
+     "duration": 0.020938,
+     "end_time": "2024-08-21T13:03:07.656143",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.635205",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(891, 12)"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Shape of dataframe\n",
+    "df_train.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "cb5a2d67",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.676974Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.676458Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.716256Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.714998Z"
+    },
+    "papermill": {
+     "duration": 0.05324,
+     "end_time": "2024-08-21T13:03:07.718929",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.665689",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>PassengerId</th>\n",
+       "      <th>Survived</th>\n",
+       "      <th>Pclass</th>\n",
+       "      <th>Age</th>\n",
+       "      <th>SibSp</th>\n",
+       "      <th>Parch</th>\n",
+       "      <th>Fare</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>count</th>\n",
+       "      <td>891.000000</td>\n",
+       "      <td>891.000000</td>\n",
+       "      <td>891.000000</td>\n",
+       "      <td>714.000000</td>\n",
+       "      <td>891.000000</td>\n",
+       "      <td>891.000000</td>\n",
+       "      <td>891.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>mean</th>\n",
+       "      <td>446.000000</td>\n",
+       "      <td>0.383838</td>\n",
+       "      <td>2.308642</td>\n",
+       "      <td>29.699118</td>\n",
+       "      <td>0.523008</td>\n",
+       "      <td>0.381594</td>\n",
+       "      <td>32.204208</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>std</th>\n",
+       "      <td>257.353842</td>\n",
+       "      <td>0.486592</td>\n",
+       "      <td>0.836071</td>\n",
+       "      <td>14.526497</td>\n",
+       "      <td>1.102743</td>\n",
+       "      <td>0.806057</td>\n",
+       "      <td>49.693429</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>min</th>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>0.420000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>25%</th>\n",
+       "      <td>223.500000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>2.000000</td>\n",
+       "      <td>20.125000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>7.910400</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>50%</th>\n",
+       "      <td>446.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>3.000000</td>\n",
+       "      <td>28.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>14.454200</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>75%</th>\n",
+       "      <td>668.500000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>3.000000</td>\n",
+       "      <td>38.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>31.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>max</th>\n",
+       "      <td>891.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>3.000000</td>\n",
+       "      <td>80.000000</td>\n",
+       "      <td>8.000000</td>\n",
+       "      <td>6.000000</td>\n",
+       "      <td>512.329200</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "       PassengerId    Survived      Pclass         Age       SibSp  \\\n",
+       "count   891.000000  891.000000  891.000000  714.000000  891.000000   \n",
+       "mean    446.000000    0.383838    2.308642   29.699118    0.523008   \n",
+       "std     257.353842    0.486592    0.836071   14.526497    1.102743   \n",
+       "min       1.000000    0.000000    1.000000    0.420000    0.000000   \n",
+       "25%     223.500000    0.000000    2.000000   20.125000    0.000000   \n",
+       "50%     446.000000    0.000000    3.000000   28.000000    0.000000   \n",
+       "75%     668.500000    1.000000    3.000000   38.000000    1.000000   \n",
+       "max     891.000000    1.000000    3.000000   80.000000    8.000000   \n",
+       "\n",
+       "            Parch        Fare  \n",
+       "count  891.000000  891.000000  \n",
+       "mean     0.381594   32.204208  \n",
+       "std      0.806057   49.693429  \n",
+       "min      0.000000    0.000000  \n",
+       "25%      0.000000    7.910400  \n",
+       "50%      0.000000   14.454200  \n",
+       "75%      0.000000   31.000000  \n",
+       "max      6.000000  512.329200  "
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Check data metrics overview\n",
+    "df_train.describe()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "85561522",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008495,
+     "end_time": "2024-08-21T13:03:07.736424",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.727929",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 2. Data cleaning"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "1eec9478",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.759147Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.758671Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.768463Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.767061Z"
+    },
+    "papermill": {
+     "duration": 0.025458,
+     "end_time": "2024-08-21T13:03:07.771407",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.745949",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#Checking for duplicates\n",
+    "df_no_duplicates = df_train.drop_duplicates()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "ebe4ebe1",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.791966Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.791302Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.798548Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.797295Z"
+    },
+    "papermill": {
+     "duration": 0.020756,
+     "end_time": "2024-08-21T13:03:07.801252",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.780496",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(891, 12)"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#No duplicates\n",
+    "df_no_duplicates.shape"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7d410c5e",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008808,
+     "end_time": "2024-08-21T13:03:07.819703",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.810895",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# 3. Feature Engineering "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3989cec2",
+   "metadata": {
+    "papermill": {
+     "duration": 0.00887,
+     "end_time": "2024-08-21T13:03:07.838034",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.829164",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## Creating new features"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "b3fcdd93",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.862230Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.861252Z",
+     "iopub.status.idle": "2024-08-21T13:03:07.873268Z",
+     "shell.execute_reply": "2024-08-21T13:03:07.872009Z"
+    },
+    "papermill": {
+     "duration": 0.026117,
+     "end_time": "2024-08-21T13:03:07.875925",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.849808",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#Convert float to numeric, and null cases transform to 0\n",
+    "df_test['Age'] = df_test['Age'].fillna(0).astype(int)\n",
+    "df_test['Fare'] = df_test['Fare'].fillna(0).astype(int)\n",
+    "\n",
+    "df_train['Age'] = df_train['Age'].fillna(0).astype(int)\n",
+    "df_train['Fare'] = df_train['Fare'].fillna(0).astype(int)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "b8b3e006",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:07.896363Z",
+     "iopub.status.busy": "2024-08-21T13:03:07.895308Z",
+     "iopub.status.idle": "2024-08-21T13:03:09.245498Z",
+     "shell.execute_reply": "2024-08-21T13:03:09.244016Z"
+    },
+    "papermill": {
+     "duration": 1.363422,
+     "end_time": "2024-08-21T13:03:09.248327",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:07.884905",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.preprocessing import LabelEncoder\n",
+    "\n",
+    "# Initialize LabelEncoder\n",
+    "label_encoder = LabelEncoder()\n",
+    "\n",
+    "full_data = [df_train, df_test] #Create full_data, memory reference will apply any change on full_data in df_train and df_test as well\n",
+    "\n",
+    "for dataset in full_data:\n",
+    "    #Calculate size of family, including Passenger\n",
+    "    dataset['family_size'] = dataset['SibSp'] + dataset['Parch'] + 1\n",
+    "    #Maping Sex from text to number\n",
+    "    dataset['Sex'] = dataset['Sex'].map({'male':0, 'female':1})\n",
+    "    #Is passenger alone?\n",
+    "    dataset['is_alone'] = dataset['family_size'].apply(lambda x: 1 if x == 1 else 0 )\n",
+    "    #Has cabin?\n",
+    "    dataset['has_cabin'] = dataset['Cabin'].apply(lambda x: 0 if pd.isnull(x) else 1 )\n",
+    "    \n",
+    "    #Create a new column range of age\n",
+    "    # Define the bins and labels\n",
+    "    bins = [0, 10, 20, 30, 40, 50, 60, 70, 80]\n",
+    "    labels = ['0-10', '11-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71-80']\n",
+    "    # Create a new column 'AgeRange' with the binned age groups\n",
+    "    dataset['AgeRange'] = pd.cut(dataset['Age'], bins=bins, labels=labels, right=False)\n",
+    "    dataset['AgeRange'] = label_encoder.fit_transform(dataset['AgeRange'])\n",
+    "    \n",
+    "#   dataset['ticket_number'] = dataset['Ticket'].apply(lambda x : x.split(\" \")[-1])\n",
+    "    dataset['Name'] =  dataset['Name'].apply(lambda x: \" \".join([v.strip(\",()[].\\\"'\") for v in x.split(\" \")]))\n",
+    "    \n",
+    "#Mapping age"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "31b06d76",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:09.267956Z",
+     "iopub.status.busy": "2024-08-21T13:03:09.267581Z",
+     "iopub.status.idle": "2024-08-21T13:03:09.283983Z",
+     "shell.execute_reply": "2024-08-21T13:03:09.282857Z"
+    },
+    "papermill": {
+     "duration": 0.029148,
+     "end_time": "2024-08-21T13:03:09.286553",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:09.257405",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df_train = pd.get_dummies(df_train, columns=['Embarked'], drop_first=True)\n",
+    "df_test = pd.get_dummies(df_test, columns=['Embarked'], drop_first=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6f98e4c5",
+   "metadata": {
+    "papermill": {
+     "duration": 0.00934,
+     "end_time": "2024-08-21T13:03:09.304918",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:09.295578",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## Drop features"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4c3b76a2",
+   "metadata": {
+    "papermill": {
+     "duration": 0.009744,
+     "end_time": "2024-08-21T13:03:09.324361",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:09.314617",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# 4. Modeling"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4200d096",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008446,
+     "end_time": "2024-08-21T13:03:09.341942",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:09.333496",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## Random forest"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "ded57183",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:09.362578Z",
+     "iopub.status.busy": "2024-08-21T13:03:09.361510Z",
+     "iopub.status.idle": "2024-08-21T13:03:09.368510Z",
+     "shell.execute_reply": "2024-08-21T13:03:09.367171Z"
+    },
+    "papermill": {
+     "duration": 0.02013,
+     "end_time": "2024-08-21T13:03:09.371534",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:09.351404",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Input features: ['Pclass', 'Sex', 'SibSp', 'Parch', 'Fare', 'family_size', 'is_alone', 'has_cabin', 'AgeRange', 'Embarked_Q', 'Embarked_S']\n"
+     ]
+    }
+   ],
+   "source": [
+    "input_features = list(df_train.columns)\n",
+    "\n",
+    "input_features.remove(\"Ticket\")\n",
+    "input_features.remove(\"Survived\")\n",
+    "input_features.remove(\"Age\")\n",
+    "input_features.remove('Name')\n",
+    "input_features.remove('Cabin')\n",
+    "\n",
+    "input_features.remove(\"PassengerId\")\n",
+    "\n",
+    "print(f\"Input features: {input_features}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "7f439654",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:09.391821Z",
+     "iopub.status.busy": "2024-08-21T13:03:09.391396Z",
+     "iopub.status.idle": "2024-08-21T13:03:09.406451Z",
+     "shell.execute_reply": "2024-08-21T13:03:09.405317Z"
+    },
+    "papermill": {
+     "duration": 0.028296,
+     "end_time": "2024-08-21T13:03:09.408916",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:09.380620",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Pclass</th>\n",
+       "      <th>Sex</th>\n",
+       "      <th>SibSp</th>\n",
+       "      <th>Parch</th>\n",
+       "      <th>Fare</th>\n",
+       "      <th>family_size</th>\n",
+       "      <th>is_alone</th>\n",
+       "      <th>has_cabin</th>\n",
+       "      <th>AgeRange</th>\n",
+       "      <th>Embarked_Q</th>\n",
+       "      <th>Embarked_S</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>3</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>2</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2</td>\n",
+       "      <td>False</td>\n",
+       "      <td>True</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>71</td>\n",
+       "      <td>2</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>False</td>\n",
+       "      <td>False</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2</td>\n",
+       "      <td>False</td>\n",
+       "      <td>True</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>53</td>\n",
+       "      <td>2</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>False</td>\n",
+       "      <td>True</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>3</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>8</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>False</td>\n",
+       "      <td>True</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Pclass  Sex  SibSp  Parch  Fare  family_size  is_alone  has_cabin  \\\n",
+       "0       3    0      1      0     7            2         0          0   \n",
+       "1       1    1      1      0    71            2         0          1   \n",
+       "2       3    1      0      0     7            1         1          0   \n",
+       "3       1    1      1      0    53            2         0          1   \n",
+       "4       3    0      0      0     8            1         1          0   \n",
+       "\n",
+       "   AgeRange  Embarked_Q  Embarked_S  \n",
+       "0         2       False        True  \n",
+       "1         3       False       False  \n",
+       "2         2       False        True  \n",
+       "3         3       False        True  \n",
+       "4         3       False        True  "
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df_train[input_features].head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "ab26ce50",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:09.429354Z",
+     "iopub.status.busy": "2024-08-21T13:03:09.428691Z",
+     "iopub.status.idle": "2024-08-21T13:03:10.143829Z",
+     "shell.execute_reply": "2024-08-21T13:03:10.142432Z"
+    },
+    "papermill": {
+     "duration": 0.729197,
+     "end_time": "2024-08-21T13:03:10.147267",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:09.418070",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Your submission was successfully saved!\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "\n",
+    "y = df_train[\"Survived\"]\n",
+    "X = df_train[input_features]\n",
+    "\n",
+    "X_test = df_test[input_features]\n",
+    "\n",
+    "model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=1)\n",
+    "model.fit(X, y)\n",
+    "predictions = model.predict(X_test)\n",
+    "\n",
+    "output = pd.DataFrame({'PassengerId': df_test.PassengerId, 'Survived': predictions})\n",
+    "output.to_csv('submission.csv', index=False)\n",
+    "print(\"Your submission was successfully saved!\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "b3aeb789",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:10.173352Z",
+     "iopub.status.busy": "2024-08-21T13:03:10.172949Z",
+     "iopub.status.idle": "2024-08-21T13:03:10.181853Z",
+     "shell.execute_reply": "2024-08-21T13:03:10.180361Z"
+    },
+    "papermill": {
+     "duration": 0.027606,
+     "end_time": "2024-08-21T13:03:10.185211",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:10.157605",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "142"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "output['Survived'].sum()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0d1cf14b",
+   "metadata": {
+    "papermill": {
+     "duration": 0.010058,
+     "end_time": "2024-08-21T13:03:10.206638",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:10.196580",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## Random forest CV (GridSearchCV)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e6806ed6",
+   "metadata": {
+    "papermill": {
+     "duration": 0.009962,
+     "end_time": "2024-08-21T13:03:10.226120",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:10.216158",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "053e93e3",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:10.248992Z",
+     "iopub.status.busy": "2024-08-21T13:03:10.248572Z",
+     "iopub.status.idle": "2024-08-21T13:03:10.257391Z",
+     "shell.execute_reply": "2024-08-21T13:03:10.255849Z"
+    },
+    "papermill": {
+     "duration": 0.023454,
+     "end_time": "2024-08-21T13:03:10.260170",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:10.236716",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.model_selection import train_test_split,GridSearchCV,PredefinedSplit\n",
+    "\n",
+    "y_train = df_train[\"Survived\"]\n",
+    "\n",
+    "X_train = df_train[input_features]\n",
+    "X_test = df_test[input_features]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "1e397519",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:10.281680Z",
+     "iopub.status.busy": "2024-08-21T13:03:10.281240Z",
+     "iopub.status.idle": "2024-08-21T13:03:10.292730Z",
+     "shell.execute_reply": "2024-08-21T13:03:10.291302Z"
+    },
+    "papermill": {
+     "duration": 0.025044,
+     "end_time": "2024-08-21T13:03:10.295662",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:10.270618",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# Split the data\n",
+    "X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, \n",
+    "                                            stratify=y_train, random_state=10)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "4541af10",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:10.318971Z",
+     "iopub.status.busy": "2024-08-21T13:03:10.318366Z",
+     "iopub.status.idle": "2024-08-21T13:03:10.326180Z",
+     "shell.execute_reply": "2024-08-21T13:03:10.324722Z"
+    },
+    "papermill": {
+     "duration": 0.022467,
+     "end_time": "2024-08-21T13:03:10.328833",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:10.306366",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# Create a split index: 0 for training, 1 for validation\n",
+    "split_index = [0 if x in X_val.index else -1 for x in X_train.index]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "463a80dd",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:03:10.351605Z",
+     "iopub.status.busy": "2024-08-21T13:03:10.351180Z",
+     "iopub.status.idle": "2024-08-21T13:04:01.965953Z",
+     "shell.execute_reply": "2024-08-21T13:04:01.964377Z"
+    },
+    "papermill": {
+     "duration": 51.639111,
+     "end_time": "2024-08-21T13:04:01.978523",
+     "exception": false,
+     "start_time": "2024-08-21T13:03:10.339412",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Fitting 1 folds for each of 400 candidates, totalling 400 fits\n",
+      "CPU times: user 1.58 s, sys: 208 ms, total: 1.79 s\n",
+      "Wall time: 51.6 s\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<style>#sk-container-id-1 {color: black;background-color: white;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: \"▸\";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: \"▾\";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: \"\";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style><div id=\"sk-container-id-1\" class=\"sk-top-container\"><div class=\"sk-text-repr-fallback\"><pre>GridSearchCV(cv=PredefinedSplit(test_fold=array([-1, -1, ..., -1, -1])),\n",
+       "             estimator=RandomForestClassifier(random_state=0), n_jobs=-1,\n",
+       "             param_grid={&#x27;max_depth&#x27;: [2, 5, 10, 15, None],\n",
+       "                         &#x27;max_features&#x27;: [2, 4, 6, 8, 10],\n",
+       "                         &#x27;min_samples_leaf&#x27;: [1, 3],\n",
+       "                         &#x27;min_samples_split&#x27;: [2, 4],\n",
+       "                         &#x27;n_estimators&#x27;: [75, 125, 150, 200]},\n",
+       "             refit=&#x27;f1&#x27;, verbose=1)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class=\"sk-container\" hidden><div class=\"sk-item sk-dashed-wrapped\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-1\" type=\"checkbox\" ><label for=\"sk-estimator-id-1\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">GridSearchCV</label><div class=\"sk-toggleable__content\"><pre>GridSearchCV(cv=PredefinedSplit(test_fold=array([-1, -1, ..., -1, -1])),\n",
+       "             estimator=RandomForestClassifier(random_state=0), n_jobs=-1,\n",
+       "             param_grid={&#x27;max_depth&#x27;: [2, 5, 10, 15, None],\n",
+       "                         &#x27;max_features&#x27;: [2, 4, 6, 8, 10],\n",
+       "                         &#x27;min_samples_leaf&#x27;: [1, 3],\n",
+       "                         &#x27;min_samples_split&#x27;: [2, 4],\n",
+       "                         &#x27;n_estimators&#x27;: [75, 125, 150, 200]},\n",
+       "             refit=&#x27;f1&#x27;, verbose=1)</pre></div></div></div><div class=\"sk-parallel\"><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-2\" type=\"checkbox\" ><label for=\"sk-estimator-id-2\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">estimator: RandomForestClassifier</label><div class=\"sk-toggleable__content\"><pre>RandomForestClassifier(random_state=0)</pre></div></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-3\" type=\"checkbox\" ><label for=\"sk-estimator-id-3\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">RandomForestClassifier</label><div class=\"sk-toggleable__content\"><pre>RandomForestClassifier(random_state=0)</pre></div></div></div></div></div></div></div></div></div></div>"
+      ],
+      "text/plain": [
+       "GridSearchCV(cv=PredefinedSplit(test_fold=array([-1, -1, ..., -1, -1])),\n",
+       "             estimator=RandomForestClassifier(random_state=0), n_jobs=-1,\n",
+       "             param_grid={'max_depth': [2, 5, 10, 15, None],\n",
+       "                         'max_features': [2, 4, 6, 8, 10],\n",
+       "                         'min_samples_leaf': [1, 3],\n",
+       "                         'min_samples_split': [2, 4],\n",
+       "                         'n_estimators': [75, 125, 150, 200]},\n",
+       "             refit='f1', verbose=1)"
+      ]
+     },
+     "execution_count": 19,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%time\n",
+    "# Initialize random forest model variable\n",
+    "rf = RandomForestClassifier(random_state=0)\n",
+    "\n",
+    "# Define Cross validation dictionary \n",
+    "cv_params = {'max_depth': [2,5,10,15, None], \n",
+    "             'min_samples_leaf': [1,3],\n",
+    "             'min_samples_split': [2,4],\n",
+    "             'max_features': [2,4,6,8,10],\n",
+    "             'n_estimators': [75, 125, 150, 200]\n",
+    "             }  \n",
+    "\n",
+    "# Define scores to evaluate model\n",
+    "scoring = {'accuracy', 'precision', 'recall', 'f1'}\n",
+    "\n",
+    "# Use PredefinedSplit function pass the list to GridSearchCV\n",
+    "#Then we'll use this variable for the `cv` argument when we instantiate `GridSearchCV`.\n",
+    "custom_split = PredefinedSplit(split_index)\n",
+    "\n",
+    "# Performs validation on this defined cv_params validation set\n",
+    "rf_val = GridSearchCV(rf, cv_params, cv=custom_split, refit='f1', n_jobs = -1, verbose = 1)\n",
+    "\n",
+    "#Fit the model\n",
+    "rf_val.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "6785b412",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:04:02.000787Z",
+     "iopub.status.busy": "2024-08-21T13:04:02.000341Z",
+     "iopub.status.idle": "2024-08-21T13:04:02.008087Z",
+     "shell.execute_reply": "2024-08-21T13:04:02.006952Z"
+    },
+    "papermill": {
+     "duration": 0.02187,
+     "end_time": "2024-08-21T13:04:02.010478",
+     "exception": false,
+     "start_time": "2024-08-21T13:04:01.988608",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'max_depth': 15,\n",
+       " 'max_features': 8,\n",
+       " 'min_samples_leaf': 1,\n",
+       " 'min_samples_split': 4,\n",
+       " 'n_estimators': 150}"
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Checking for the best parameters combination\n",
+    "rf_val.best_params_"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "9ae2a373",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:04:02.033338Z",
+     "iopub.status.busy": "2024-08-21T13:04:02.032943Z",
+     "iopub.status.idle": "2024-08-21T13:04:02.453825Z",
+     "shell.execute_reply": "2024-08-21T13:04:02.452516Z"
+    },
+    "papermill": {
+     "duration": 0.435602,
+     "end_time": "2024-08-21T13:04:02.456261",
+     "exception": false,
+     "start_time": "2024-08-21T13:04:02.020659",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Your submission was successfully saved!\n"
+     ]
+    }
+   ],
+   "source": [
+    "model = RandomForestClassifier(n_estimators=150, max_depth=15, max_features = 8, min_samples_leaf = 1, min_samples_split =4, random_state=1)\n",
+    "model.fit(X_train, y_train)\n",
+    "predictions = model.predict(X_test)\n",
+    "\n",
+    "output = pd.DataFrame({'PassengerId': df_test.PassengerId, 'Survived': predictions})\n",
+    "output.to_csv('submission_cv_randomforest_14082024.csv', index=False)\n",
+    "print(\"Your submission was successfully saved!\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "d42f2373",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:04:02.478347Z",
+     "iopub.status.busy": "2024-08-21T13:04:02.477915Z",
+     "iopub.status.idle": "2024-08-21T13:04:02.486027Z",
+     "shell.execute_reply": "2024-08-21T13:04:02.484872Z"
+    },
+    "papermill": {
+     "duration": 0.021993,
+     "end_time": "2024-08-21T13:04:02.488416",
+     "exception": false,
+     "start_time": "2024-08-21T13:04:02.466423",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "154"
+      ]
+     },
+     "execution_count": 22,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "output['Survived'].sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "7103da93",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:04:02.511008Z",
+     "iopub.status.busy": "2024-08-21T13:04:02.510598Z",
+     "iopub.status.idle": "2024-08-21T13:04:02.701215Z",
+     "shell.execute_reply": "2024-08-21T13:04:02.700118Z"
+    },
+    "papermill": {
+     "duration": 0.205394,
+     "end_time": "2024-08-21T13:04:02.703892",
+     "exception": false,
+     "start_time": "2024-08-21T13:04:02.498498",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "from xgboost import XGBClassifier\n",
+    "\n",
+    "cv_params = {'max_depth' : [4,5,6,7,8],\n",
+    "            'min_child_weight' : [1,2,3,4,5],\n",
+    "            'learning_rate' : [0.1,0.2,0.3],\n",
+    "            'n_estimators' : [75,100,125]\n",
+    "            }\n",
+    "xgb = XGBClassifier(objective = 'binary:logistic', random_state = 0)\n",
+    "\n",
+    "scoring = {'accuracy', 'precision', 'recall', 'f1'}\n",
+    "\n",
+    "xgb_cv = GridSearchCV(xgb, cv_params, scoring=scoring, cv = 5, refit = 'f1')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "7bd71acf",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:04:02.726524Z",
+     "iopub.status.busy": "2024-08-21T13:04:02.726125Z",
+     "iopub.status.idle": "2024-08-21T13:05:27.083203Z",
+     "shell.execute_reply": "2024-08-21T13:05:27.082010Z"
+    },
+    "papermill": {
+     "duration": 84.381686,
+     "end_time": "2024-08-21T13:05:27.096067",
+     "exception": false,
+     "start_time": "2024-08-21T13:04:02.714381",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<style>#sk-container-id-2 {color: black;background-color: white;}#sk-container-id-2 pre{padding: 0;}#sk-container-id-2 div.sk-toggleable {background-color: white;}#sk-container-id-2 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-2 label.sk-toggleable__label-arrow:before {content: \"▸\";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-2 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-2 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-2 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-2 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-2 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-2 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: \"▾\";}#sk-container-id-2 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-2 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-2 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-2 div.sk-parallel-item::after {content: \"\";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-2 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 div.sk-serial::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-2 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-2 div.sk-item {position: relative;z-index: 1;}#sk-container-id-2 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-2 div.sk-item::before, #sk-container-id-2 div.sk-parallel-item::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-2 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-2 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-2 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-2 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-2 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-2 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-2 div.sk-label-container {text-align: center;}#sk-container-id-2 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-2 div.sk-text-repr-fallback {display: none;}</style><div id=\"sk-container-id-2\" class=\"sk-top-container\"><div class=\"sk-text-repr-fallback\"><pre>GridSearchCV(cv=5,\n",
+       "             estimator=XGBClassifier(base_score=None, booster=None,\n",
+       "                                     callbacks=None, colsample_bylevel=None,\n",
+       "                                     colsample_bynode=None,\n",
+       "                                     colsample_bytree=None, device=None,\n",
+       "                                     early_stopping_rounds=None,\n",
+       "                                     enable_categorical=False, eval_metric=None,\n",
+       "                                     feature_types=None, gamma=None,\n",
+       "                                     grow_policy=None, importance_type=None,\n",
+       "                                     interaction_constraints=None,\n",
+       "                                     learning_rate=None,...\n",
+       "                                     max_leaves=None, min_child_weight=None,\n",
+       "                                     missing=nan, monotone_constraints=None,\n",
+       "                                     multi_strategy=None, n_estimators=None,\n",
+       "                                     n_jobs=None, num_parallel_tree=None,\n",
+       "                                     random_state=0, ...),\n",
+       "             param_grid={&#x27;learning_rate&#x27;: [0.1, 0.2, 0.3],\n",
+       "                         &#x27;max_depth&#x27;: [4, 5, 6, 7, 8],\n",
+       "                         &#x27;min_child_weight&#x27;: [1, 2, 3, 4, 5],\n",
+       "                         &#x27;n_estimators&#x27;: [75, 100, 125]},\n",
+       "             refit=&#x27;f1&#x27;, scoring={&#x27;accuracy&#x27;, &#x27;precision&#x27;, &#x27;recall&#x27;, &#x27;f1&#x27;})</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class=\"sk-container\" hidden><div class=\"sk-item sk-dashed-wrapped\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-4\" type=\"checkbox\" ><label for=\"sk-estimator-id-4\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">GridSearchCV</label><div class=\"sk-toggleable__content\"><pre>GridSearchCV(cv=5,\n",
+       "             estimator=XGBClassifier(base_score=None, booster=None,\n",
+       "                                     callbacks=None, colsample_bylevel=None,\n",
+       "                                     colsample_bynode=None,\n",
+       "                                     colsample_bytree=None, device=None,\n",
+       "                                     early_stopping_rounds=None,\n",
+       "                                     enable_categorical=False, eval_metric=None,\n",
+       "                                     feature_types=None, gamma=None,\n",
+       "                                     grow_policy=None, importance_type=None,\n",
+       "                                     interaction_constraints=None,\n",
+       "                                     learning_rate=None,...\n",
+       "                                     max_leaves=None, min_child_weight=None,\n",
+       "                                     missing=nan, monotone_constraints=None,\n",
+       "                                     multi_strategy=None, n_estimators=None,\n",
+       "                                     n_jobs=None, num_parallel_tree=None,\n",
+       "                                     random_state=0, ...),\n",
+       "             param_grid={&#x27;learning_rate&#x27;: [0.1, 0.2, 0.3],\n",
+       "                         &#x27;max_depth&#x27;: [4, 5, 6, 7, 8],\n",
+       "                         &#x27;min_child_weight&#x27;: [1, 2, 3, 4, 5],\n",
+       "                         &#x27;n_estimators&#x27;: [75, 100, 125]},\n",
+       "             refit=&#x27;f1&#x27;, scoring={&#x27;accuracy&#x27;, &#x27;precision&#x27;, &#x27;recall&#x27;, &#x27;f1&#x27;})</pre></div></div></div><div class=\"sk-parallel\"><div class=\"sk-parallel-item\"><div class=\"sk-item\"><div class=\"sk-label-container\"><div class=\"sk-label sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-5\" type=\"checkbox\" ><label for=\"sk-estimator-id-5\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">estimator: XGBClassifier</label><div class=\"sk-toggleable__content\"><pre>XGBClassifier(base_score=None, booster=None, callbacks=None,\n",
+       "              colsample_bylevel=None, colsample_bynode=None,\n",
+       "              colsample_bytree=None, device=None, early_stopping_rounds=None,\n",
+       "              enable_categorical=False, eval_metric=None, feature_types=None,\n",
+       "              gamma=None, grow_policy=None, importance_type=None,\n",
+       "              interaction_constraints=None, learning_rate=None, max_bin=None,\n",
+       "              max_cat_threshold=None, max_cat_to_onehot=None,\n",
+       "              max_delta_step=None, max_depth=None, max_leaves=None,\n",
+       "              min_child_weight=None, missing=nan, monotone_constraints=None,\n",
+       "              multi_strategy=None, n_estimators=None, n_jobs=None,\n",
+       "              num_parallel_tree=None, random_state=0, ...)</pre></div></div></div><div class=\"sk-serial\"><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-6\" type=\"checkbox\" ><label for=\"sk-estimator-id-6\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">XGBClassifier</label><div class=\"sk-toggleable__content\"><pre>XGBClassifier(base_score=None, booster=None, callbacks=None,\n",
+       "              colsample_bylevel=None, colsample_bynode=None,\n",
+       "              colsample_bytree=None, device=None, early_stopping_rounds=None,\n",
+       "              enable_categorical=False, eval_metric=None, feature_types=None,\n",
+       "              gamma=None, grow_policy=None, importance_type=None,\n",
+       "              interaction_constraints=None, learning_rate=None, max_bin=None,\n",
+       "              max_cat_threshold=None, max_cat_to_onehot=None,\n",
+       "              max_delta_step=None, max_depth=None, max_leaves=None,\n",
+       "              min_child_weight=None, missing=nan, monotone_constraints=None,\n",
+       "              multi_strategy=None, n_estimators=None, n_jobs=None,\n",
+       "              num_parallel_tree=None, random_state=0, ...)</pre></div></div></div></div></div></div></div></div></div></div>"
+      ],
+      "text/plain": [
+       "GridSearchCV(cv=5,\n",
+       "             estimator=XGBClassifier(base_score=None, booster=None,\n",
+       "                                     callbacks=None, colsample_bylevel=None,\n",
+       "                                     colsample_bynode=None,\n",
+       "                                     colsample_bytree=None, device=None,\n",
+       "                                     early_stopping_rounds=None,\n",
+       "                                     enable_categorical=False, eval_metric=None,\n",
+       "                                     feature_types=None, gamma=None,\n",
+       "                                     grow_policy=None, importance_type=None,\n",
+       "                                     interaction_constraints=None,\n",
+       "                                     learning_rate=None,...\n",
+       "                                     max_leaves=None, min_child_weight=None,\n",
+       "                                     missing=nan, monotone_constraints=None,\n",
+       "                                     multi_strategy=None, n_estimators=None,\n",
+       "                                     n_jobs=None, num_parallel_tree=None,\n",
+       "                                     random_state=0, ...),\n",
+       "             param_grid={'learning_rate': [0.1, 0.2, 0.3],\n",
+       "                         'max_depth': [4, 5, 6, 7, 8],\n",
+       "                         'min_child_weight': [1, 2, 3, 4, 5],\n",
+       "                         'n_estimators': [75, 100, 125]},\n",
+       "             refit='f1', scoring={'accuracy', 'precision', 'recall', 'f1'})"
+      ]
+     },
+     "execution_count": 24,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "xgb_cv.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "45aedde8",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:05:27.118721Z",
+     "iopub.status.busy": "2024-08-21T13:05:27.118259Z",
+     "iopub.status.idle": "2024-08-21T13:05:27.125699Z",
+     "shell.execute_reply": "2024-08-21T13:05:27.124512Z"
+    },
+    "papermill": {
+     "duration": 0.021862,
+     "end_time": "2024-08-21T13:05:27.128137",
+     "exception": false,
+     "start_time": "2024-08-21T13:05:27.106275",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'learning_rate': 0.2,\n",
+       " 'max_depth': 7,\n",
+       " 'min_child_weight': 5,\n",
+       " 'n_estimators': 75}"
+      ]
+     },
+     "execution_count": 25,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "xgb_cv.best_params_"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "id": "52daf423",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:05:27.151639Z",
+     "iopub.status.busy": "2024-08-21T13:05:27.151220Z",
+     "iopub.status.idle": "2024-08-21T13:05:27.216703Z",
+     "shell.execute_reply": "2024-08-21T13:05:27.215518Z"
+    },
+    "papermill": {
+     "duration": 0.080401,
+     "end_time": "2024-08-21T13:05:27.219225",
+     "exception": false,
+     "start_time": "2024-08-21T13:05:27.138824",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "xgb_model = XGBClassifier(n_estimators=75, min_child_weight=5, max_depth = 7, learning_rate = 0.2, random_state=1)\n",
+    "xgb_model.fit(X_train, y_train)\n",
+    "predictions = xgb_model.predict(X_test)\n",
+    "\n",
+    "output = pd.DataFrame({'PassengerId': df_test.PassengerId, 'Survived': predictions})\n",
+    "output.to_csv('submission.csv', index=False)\n",
+    "output.to_csv('submission_cv_xgboost_21082024.csv', index=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "id": "0a9ca41f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-08-21T13:05:27.241969Z",
+     "iopub.status.busy": "2024-08-21T13:05:27.241594Z",
+     "iopub.status.idle": "2024-08-21T13:05:27.249315Z",
+     "shell.execute_reply": "2024-08-21T13:05:27.248145Z"
+    },
+    "papermill": {
+     "duration": 0.021828,
+     "end_time": "2024-08-21T13:05:27.251641",
+     "exception": false,
+     "start_time": "2024-08-21T13:05:27.229813",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "153"
+      ]
+     },
+     "execution_count": 27,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "output['Survived'].sum()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "databundleVersionId": 26502,
+     "sourceId": 3136,
+     "sourceType": "competition"
+    }
+   ],
+   "dockerImageVersionId": 30746,
+   "isGpuEnabled": false,
+   "isInternetEnabled": false,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.13"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 146.910625,
+   "end_time": "2024-08-21T13:05:29.883862",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2024-08-21T13:03:02.973237",
+   "version": "2.5.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
